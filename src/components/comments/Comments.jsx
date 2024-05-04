@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 import "./Comments.scss";
 import { AuthContext } from "../../context/authContext";
-import { makeRequest } from "../../axios";
+import { commentRequest } from "../../axios";
 import moment from "moment";
 import {
   useQuery,
@@ -40,7 +40,7 @@ const Comments = ({ postId }) => {
   const { isPending, error, data } = useQuery({
     queryKey: ['comments'], queryFn: () =>
 
-      makeRequest.get("/comments?postId=" + postId).then(res => {
+      commentRequest.get("/comments?postId=" + postId).then(res => {
         return res.data;
       })
 
@@ -50,7 +50,7 @@ const Comments = ({ postId }) => {
 
   const mutation = useMutation({
     mutationFn: (newComment) => {
-      return makeRequest.post("/comments", newComment);
+      return commentRequest.post("/comments", newComment);
     },
     onSuccess: () => {
       // Invalidate and refetch

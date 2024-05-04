@@ -9,7 +9,7 @@ import Comments from "../comments/Comments";
 import { useContext, useState } from "react";
 import moment from "moment";
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { makeRequest } from "../../axios";
+import { likeRequest } from "../../axios";
 import { AuthContext } from "../../context/authContext";
 import { buttonBaseClasses } from "@mui/material";
 
@@ -24,7 +24,7 @@ const Post = ({ post }) => {
   const { isPending, error, data } = useQuery({
     queryKey: ['likes', post.id], queryFn: () =>
 
-      makeRequest.get("/likes?postId=" + post.id).then(res => {
+      likeRequest.get("/likes?postId=" + post.id).then(res => {
         return res.data;
       })
 
@@ -35,8 +35,8 @@ const Post = ({ post }) => {
 
   const mutation = useMutation({
     mutationFn: (liked) => {
-      if (liked) return makeRequest.delete("/likes?postId=" + post.id);
-      return makeRequest.post("/likes", { postId: post.id });
+      if (liked) return likeRequest.delete("/likes?postId=" + post.id);
+      return likeRequest.post("/likes", { postId: post.id });
     },
     onSuccess: () => {
       // Invalidate and refetch
@@ -45,7 +45,7 @@ const Post = ({ post }) => {
   });
   const deleteMutation = useMutation({
     mutationFn: (postId) => {
-      return makeRequest.delete("/posts/" + postId);
+      return likeRequest.delete("/posts/" + postId);
     },
     onSuccess: () => {
       // Invalidate and refetch
