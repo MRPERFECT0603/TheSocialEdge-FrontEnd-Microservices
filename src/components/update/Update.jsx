@@ -1,9 +1,10 @@
 
 import { useState } from "react";
 import "./Update.scss"
-import { makeRequest } from "../../axios";
+import { authRequest, userRequest } from "../../axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import axios from "axios";
 
 
 const Update = ({ setOpenUpdate, user }) => {
@@ -18,14 +19,23 @@ const Update = ({ setOpenUpdate, user }) => {
     website: user.website,
   });
   const upload = async (file) => {
+    const formData = new FormData();
     console.log(file);
+    formData.append("file", file);
+    formData.append("upload_preset", "TheSocialEdge");
+    console.log([...formData.entries()]);
+    console.log(formData);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      const res = await makeRequest.post("/upload", formData);
-      return res.data.url;
-    } catch (err) {
-      console.log(err);
+      const response = await axios.post(
+        "https://api.cloudinary.com/v1_1/dbm2pouet/image/upload",
+        formData
+      );
+      console.log(response.data.url);
+      return response.data.url;
+      // return response; // Return the response after successful upload
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      throw error; // Throw the error to handle it in the calling function
     }
   };
   const handleChange = (e) => {
@@ -35,7 +45,7 @@ const Update = ({ setOpenUpdate, user }) => {
 
   const mutation = useMutation({
     mutationFn: (user) => {
-      return makeRequest.put("/users", user);
+      return userRequest.put("/user", user);
     },
     onSuccess: () => {
       // Invalidate and refetch

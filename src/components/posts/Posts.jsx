@@ -38,11 +38,17 @@ const Posts = ({ userId }) => {
   if (isPending) return 'Loading...'
 
   if (error) return 'An error has occurred: ' + error.message
+  if (!Array.isArray(data) || data.length === 0) return 'No posts found.'
+
+  // Sort the data array in descending order based on createdAt
+  const sortedData = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+
 
   return (
     <div className="posts">
-      {data.map((post) => (
-        <Post post={post} key={post.id} />
+      {sortedData.map((post) => (
+        <Post post={post} key={post._id} />
       ))}
     </div>
   )

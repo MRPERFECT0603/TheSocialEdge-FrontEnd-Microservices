@@ -9,7 +9,7 @@ import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import Posts from "../../components/posts/Posts"
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { makeRequest } from "../../axios";
+import { userRequest } from "../../axios";
 import { useLocation } from "react-router-dom";
 import { useContext, useState } from "react";
 import { AuthContext } from "../../context/authContext";
@@ -21,12 +21,16 @@ const Profile = () => {
   const [openUpdate, setOpenUpdate] = useState(false);
 
   const { currentUser } = useContext(AuthContext);
-  const userId = parseInt(useLocation().pathname.split("/")[2]);
+
+  const userIdMatch = useLocation().pathname.match(/\/profile\/(\w+)$/);
+  const userId = userIdMatch ? userIdMatch[1] : null;
+
+  // console.log(userId);
 
   const { isPending, error, data } = useQuery({
     queryKey: ['user'], queryFn: () =>
 
-      makeRequest.get("/users/find/" + userId).then(res => {
+      userRequest.get("/user/find/" + userId).then(res => {
         return res.data;
       })
 
@@ -35,7 +39,7 @@ const Profile = () => {
   const { data: relationshipData } = useQuery({
     queryKey: ['relationship'], queryFn: () =>
 
-      makeRequest.get("/api/relationships?followedUserid=" + userId).then(res => {
+      userRequest.get("/user/find/" + userId).then(res => {
         return res.data;
       })
 
@@ -45,8 +49,8 @@ const Profile = () => {
 
   const mutation = useMutation({
     mutationFn: (following) => {
-      if (following) return makeRequest.delete("/relationships?userId=" + userId);
-      return makeRequest.post("/relationships", { userId });
+      if (following) return userRequest.delete("/user/following?userId=" + userId);
+      return userRequest.post("/relationships", { userId });
     },
     onSuccess: () => {
       // Invalidate and refetch
@@ -54,7 +58,7 @@ const Profile = () => {
     },
   })
   const handleFollow = () => {
-    mutation.mutate(relationshipData?.includes(currentUser.id))
+    mutation.mutate(relationshipData?.following.includes(currentUser.id))
   }
 
 
@@ -101,7 +105,7 @@ const Profile = () => {
               </div>
             </div>
             {userId === currentUser.id ? <button onClick={() => setOpenUpdate(true)}>Update</button>
-              : <button onClick={handleFollow}>{relationshipData?.includes(currentUser.id) ? "Following" : "Follow"}</button>}
+              : <button onClick={handleFollow}>{relationshipData?.following.includes(currentUser.id) ? "Following" : "Follow"}</button>}
           </div>
           <div className="right">
             <EmailOutlinedIcon />

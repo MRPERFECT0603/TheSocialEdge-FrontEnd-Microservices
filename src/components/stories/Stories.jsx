@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import "./Stories.scss"
 import { AuthContext } from "../../context/authContext"
 
@@ -8,11 +8,29 @@ import story3 from "../../assets/story3.jpg";
 import story4 from "../../assets/story4.jpg";
 import story5 from "../../assets/story5.jpg";
 import story6 from "../../assets/story6.jpg";
+import { userRequest } from "../../axios";
 
 
 const Stories = () => {
 
-  const {currentUser} = useContext(AuthContext)
+  const { currentUser } = useContext(AuthContext)
+
+  const [User, setPostUser] = useState(null);
+
+  useEffect(() => {
+    if (currentUser.id) {
+      getUser();
+    }
+  }, [currentUser.id]);
+
+  const getUser = async () => {
+    try {
+      const res = await userRequest.get("/user/find/" + currentUser.id);
+      setPostUser(res.data);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+    }
+  };
 
   //TEMPORARY
   const stories = [
@@ -40,11 +58,12 @@ const Stories = () => {
   return (
     <div className="stories">
       <div className="story">
-          <img src={currentUser.profilePic} alt="" />
-          <span>{currentUser.name}</span>
-          <button>+</button>
-        </div>
-      {stories.map(story=>(
+        {User && <img src={User.profilePic} alt="" />}
+        {User && <span>{User.name}</span>}
+
+        <button>+</button>
+      </div>
+      {stories.map(story => (
         <div className="story" key={story.id}>
           <img src={story.img} alt="" />
           <span>{story.name}</span>

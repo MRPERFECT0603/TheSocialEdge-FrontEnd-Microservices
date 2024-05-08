@@ -14,16 +14,33 @@ import Courses from "../../assets/12.png";
 import Fund from "../../assets/13.png";
 import { AuthContext } from "../../context/authContext";
 import { useContext, useState, useEffect } from "react";
+import { userRequest } from "../../axios";
 
 const Leftbar = () => {
 
     const { currentUser } = useContext(AuthContext);
+    const [User, setPostUser] = useState(null);
+
+    useEffect(() => {
+        if (currentUser.id) {
+            getUser();
+        }
+    }, [currentUser.id]);
+
+    const getUser = async () => {
+        try {
+            const res = await userRequest.get("/user/find/" + currentUser.id);
+            setPostUser(res.data);
+        } catch (error) {
+            console.error("Error fetching user:", error);
+        }
+    };
     // console.log(currentUser);
     const [currUser, setCurrUser] = useState(currentUser);
     useEffect(() => {
         // const { currentUser } = useContext(AuthContext);
         // setCurrUser(currentUser);
-        setCurrUser({...currentUser},currentUser);
+        setCurrUser({ ...currentUser }, currentUser);
         console.log(currentUser);
 
     }, [currentUser])
@@ -34,8 +51,8 @@ const Leftbar = () => {
             <div className="container">
                 <div className="menu">
                     <div className="user">
-                        <img src={ currUser.profilePic} alt="" />
-                        <span>{currUser.name}</span>
+                        {User && <img src={User.profilePic} alt="" />}
+                        {User && <span>{User.name}</span>}
                     </div>
                     <div className="item">
                         <img src={Friends} alt="" />

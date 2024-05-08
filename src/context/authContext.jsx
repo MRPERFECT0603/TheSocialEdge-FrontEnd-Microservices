@@ -16,7 +16,6 @@ export const AuthContextProvider = ({ children }) => {
         withCredentials: true,
         credentials: 'include',
       });
-
       setCurrentUser(res.data);
     } catch (error) {
       console.error("Login failed:", error.response?.data || error.message);

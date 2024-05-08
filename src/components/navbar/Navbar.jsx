@@ -8,15 +8,32 @@ import NotificationsOutlinedIcon from "@mui/icons-material/NotificationsOutlined
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { DarkModeContext } from "../../context/darkmModeContext"
 import { AuthContext } from "../../context/authContext";
 import { notifyManager } from "@tanstack/react-query";
+import { userRequest } from "../../axios";
 const Navbar = () => {
 
 
     const { toggle, darkMode } = useContext(DarkModeContext);
     const { currentUser } = useContext(AuthContext);
+    const [User, setPostUser] = useState(null);
+
+    useEffect(() => {
+        if (currentUser.id) {
+            getUser();
+        }
+    }, [currentUser.id]);
+
+    const getUser = async () => {
+        try {
+            const res = await userRequest.get("/user/find/" + currentUser.id);
+            setPostUser(res.data);
+        } catch (error) {
+            console.error("Error fetching user:", error);
+        }
+    };
 
     return (
         <div className="navbar">
@@ -41,14 +58,15 @@ const Navbar = () => {
                 <PersonOutlinedIcon />
                 <EmailOutlinedIcon />
                 <NotificationsOutlinedIcon />
-                <Link 
-                to={`/profile/${currentUser.id}`}
-                style={{ textDecoration: "none", color: "inherit" }}>
-                {/* // style={{textDecoration:"none" , color:"black"}} */}
-                <div className="user">
-                    <img src={currentUser.profilePic} alt="" />
-                    <span>{currentUser.name}</span>
-                </div>
+                <Link
+                    to={`/profile/${currentUser.id}`}
+                    style={{ textDecoration: "none", color: "inherit" }}>
+                    {/* // style={{textDecoration:"none" , color:"black"}} */}
+                    <div className="user">
+                        {User && <img src={User.profilePic} alt="" />}
+                        {User && <span>{User.name}</span>}
+
+                    </div>
                 </Link>
             </div>
         </div>

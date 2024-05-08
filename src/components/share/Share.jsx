@@ -2,40 +2,64 @@ import "./share.scss";
 import Image from "../../assets/img.png";
 import Map from "../../assets/map.png";
 import Friend from "../../assets/friend.png";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../context/authContext";
 import {
   useMutation,
   useQueryClient
 } from '@tanstack/react-query'
-import { makeRequest } from "../../axios";
+import { authRequest, postRequest, userRequest } from "../../axios";
+import axios from "axios";
 const Share = () => {
+
+  const { currentUser } = useContext(AuthContext);
+  const [User, setPostUser] = useState(null);
+
+    useEffect(() => {
+      if (currentUser.id) {
+        getUser();
+      }
+    }, [currentUser.id]);
+  
+    const getUser = async () => {
+      try {
+        const res = await userRequest.get("/user/find/" + currentUser.id);
+        setPostUser(res.data);
+      } catch (error) {
+        console.error("Error fetching user:", error);
+      }
+    };
 
   const [file, setFile] = useState(null);
   const [desc, setDesc] = useState("");
 
+
   const upload = async () => {
-
+    const formData = new FormData();
+    console.log(file);
+    formData.append("file", file);
+    formData.append("upload_preset", "TheSocialEdge");
+    console.log([...formData.entries()]);
+    console.log(formData);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      console.log([...formData.entries()]);
-      const res = await makeRequest.post("/upload", formData);
-      console.log(res.data.url);
-      return res.data.url;
-
-    } catch (err) {
-      console.log(err);
+      const response = await axios.post(
+        "https://api.cloudinary.com/v1_1/dbm2pouet/image/upload",
+        formData
+      );
+      console.log(response.data.url);
+      return response.data.url;
+      // return response; // Return the response after successful upload
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      throw error; // Throw the error to handle it in the calling function
     }
   }
-
-  const { currentUser } = useContext(AuthContext);
 
   const queryClient = useQueryClient()
 
   const mutation = useMutation({
     mutationFn: (newPost) => {
-      return makeRequest.post("/posts", newPost);
+      return postRequest.post("/posts", newPost);
     },
     onSuccess: () => {
       // Invalidate and refetch
@@ -49,8 +73,8 @@ const Share = () => {
     if (file) imgUrl = await upload();
     console.log(imgUrl);
     mutation.mutate({
-      desc,
-      img: imgUrl
+      description: desc,
+      image: imgUrl
     });
     setDesc("");
     setFile(null);
@@ -73,7 +97,7 @@ const Share = () => {
       <div className="container">
         <div className="top">
           <div className="left">
-            <img src={currentUser.profilePic} alt="" />
+          {User && <img src={User.profilePic} alt="" />}
             <input
               type="text"
               placeholder={`What's on your mind ${currentUser.name}?`} onChange={e => setDesc(e.target.value)} value={desc}
